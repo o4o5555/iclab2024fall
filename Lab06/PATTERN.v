@@ -5,7 +5,8 @@
     `define CYCLE_TIME 7.9
 `endif
 
-`define PATNUM 300
+`define TOTAL_PATNUM 300
+`define CORNER_PATNUM 100
 
 module PATTERN(
     // Output signals
@@ -36,7 +37,8 @@ initial	clk = 0;
 //---------------------------------------------------------------------
 //   PARAMETER & INTEGER DECLARATION
 //---------------------------------------------------------------------
-integer PATNUM = `PATNUM;
+integer TOTAL_PATNUM = `TOTAL_PATNUM;
+integer CORNER_PATNUM = `CORNER_PATNUM;
 parameter IP_BIT = 11;
 parameter [8:0] in_mode_array [0:2] = {9'b010101000, 9'b100001100, 9'b011001100};
 parameter DECODED_2x2 = 5'b00100;
@@ -46,6 +48,7 @@ integer patcount;
 integer latency, total_latency;
 integer pos;
 integer file;
+integer corner_case_idx;
 //---------------------------------------------------------------------
 //   REG & WIRE DECLARATION
 //---------------------------------------------------------------------
@@ -104,7 +107,7 @@ end
 initial begin
     reset_task;
     file = $fopen("../00_TESTBED/debug.txt", "w");
-	for(patcount = 0; patcount < PATNUM; patcount++) begin
+	for(patcount = 0; patcount < TOTAL_PATNUM; patcount++) begin
         input_task;
 
         write_input_to_file;
@@ -176,8 +179,23 @@ task input_task; begin
 end endtask
 
 task encode_task; begin
-    for (integer i = 0; i < IP_BIT; i++)
-        random_code[i] = $urandom_range(0,1);
+    // -1024, 1023 or 1022
+    corner_case_idx = $urandom_range(0,2);
+    for (integer i = 0; i < IP_BIT; i++) begin
+        if (patcount < CORNER_PATNUM) case (corner_case_idx)
+            // -1024
+            0: random_code[i] = i == IP_BIT-1;
+            // 1023
+            1: random_code[i] = i != IP_BIT-1;
+            // 1022
+            default: random_code[i] = i != 0 && i != IP_BIT - 1;
+        endcase
+        else random_code[i] = $urandom_range(0,1);
+    end
+
+    // if (patcount < CORNER_PATNUM)
+    //     $display("Corner input: %b", random_code);
+
 
     for (integer i = 1; i <= IP_BIT + 4; i++)
         encoding[i] = 0;
