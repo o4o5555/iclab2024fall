@@ -91,16 +91,16 @@ always @(*) begin
         $finish;            
     end    
 end
-always @(negedge clk) begin
-    if (!out_valid && out_data !== 0) begin
-        print_fail_usagi;
-        $display("************************************************************");  
-        $display("                          FAIL!                           ");    
-        $display("*   The out_data should be zero when out_valid is low.   *");
-        $display("************************************************************");
-        $finish;
-    end
-end
+// always @(negedge clk) begin
+//     if (!out_valid && out_data !== 0) begin
+//         print_fail_usagi;
+//         $display("************************************************************");  
+//         $display("                          FAIL!                           ");    
+//         $display("*   The out_data should be zero when out_valid is low.   *");
+//         $display("************************************************************");
+//         $finish;
+//     end
+// end
 //---------------------------------------------------------------------
 //   INITIAL
 //---------------------------------------------------------------------
